@@ -1,0 +1,10 @@
+name: supervised-flow-pre-dsec
+channels:
+  - pytorch
+  - conda-forge
+dependencies:
+  - cudatoolkit=11.0.221=h6bb024c_0
+  - python=3.7.11=h12debd9_0
+  - pytorch=1.7.0=py3.7_cuda11.0.221_cudnn8.0.3_0
+  - torchvision=0.8.0=py37_cu110
+  - tqdm=4.63.0=pyhd8ed1ab_0
