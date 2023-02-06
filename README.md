@@ -3,7 +3,7 @@ Standalone IBM DVS128 Gesture Dataset on PyTorch. Most codes in this repository 
 
 Different from [*Tonic*](https://tonic.readthedocs.io/en/latest/reference/generated/tonic.datasets.DVSGesture.html#tonic.datasets.DVSGesture) - another neuromorphic dataset library, the dataset class in *Spiking Jelly* and this repository directly extracts sample from the original IBM dataset. *Tonic* has already pre-processed the original dataset and remove some samples, thus the number of samples in *Tonic* are slightly smaller.
 
-Example of dataset usage 
+**Example of dataset usage**
 ```python
 from tqdm import tqdm
 import torch
@@ -41,7 +41,7 @@ for event_reprs, target in tqdm(data_loader_test, desc='Loading testing data'):
 print(event_reprs.shape, target.shape)
 ```
 
-Another example of dataset usage in a different mode
+**Another example of dataset usage in a different mode**
 ```python
 # Test loading DVS 128 gesture dataset and spliting each sample into abritrary number of frames
 # such that each frame has about the same duration for instance 3e5 micro second
@@ -82,3 +82,4 @@ test_repr_lens = torch.as_tensor(test_repr_lens)
 # Print statistic of the event representation length 
 print(torch.min(test_repr_lens), torch.max(test_repr_lens), torch.mean(test_repr_lens.float()), torch.std(test_repr_lens.float()))
 ```
+There are other modes of loading dataset. See files for details.
