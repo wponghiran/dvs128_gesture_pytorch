@@ -1,2 +1,4 @@
-# dvs128_gesture_pytorch
-Standalone IBM DVS128 Gesture Dataset on PyTorch
+# Standalone IBM DVS128 Gesture Dataset on PyTorch
+Standalone IBM DVS128 Gesture Dataset on PyTorch. Most codes in this repository are extracted from [*Spiking Jelly*](https://spikingjelly.readthedocs.io/zh_CN/latest/spikingjelly.datasets.html#spikingjelly.datasets.dvs128_gesture.DVS128Gesture), which is a neuromorphic simulator repository. This is intended for anyone to experiment with the IBM DVS128 Gesture dataset without solving all dependencies of *Spiking Jelly* that could be daunting sometimes.
+
+Different from [*Tonic*](https://tonic.readthedocs.io/en/latest/reference/generated/tonic.datasets.DVSGesture.html#tonic.datasets.DVSGesture) - another neuromorphic dataset library, the dataset class in *Spiking Jelly* and this repository directly extracts sample from the original IBM dataset. *Tonic* has already pre-processed the original dataset and remove some samples, thus the number of samples in *Tonic* are slightly smaller.
