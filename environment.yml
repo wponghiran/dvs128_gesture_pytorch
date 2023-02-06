@@ -1,4 +1,4 @@
-name: supervised-flow-pre-dsec
+name: dvs128_gesture_pytorch
 channels:
   - pytorch
   - conda-forge
