@@ -3,32 +3,46 @@ Standalone IBM DVS128 Gesture Dataset on PyTorch. Most codes in this repository 
 
 Different from [*Tonic*](https://tonic.readthedocs.io/en/latest/reference/generated/tonic.datasets.DVSGesture.html#tonic.datasets.DVSGesture) - another neuromorphic dataset library, the dataset class in *Spiking Jelly* and this repository directly extracts sample from the original IBM dataset. *Tonic* has already pre-processed the original dataset and remove some samples, thus the number of samples in *Tonic* are slightly smaller.
 
-**Example of dataset usage**
+**Example of dataset usage without any pre-process. This allows one to directly access events corresponding to each sample.**
 ```python
-from tqdm import tqdm
+from custom_dataset import DVS128Gesture
 import torch
+from tqdm import tqdm
 
-device = 'cuda'
-batch_size = 4
-workers = 4
-simulation_steps = 16
 dataset_dir = '<ENTER PATH OF YOU DATASET HERE>'
 # If dataset doesn't exist, the dataset will be download to the specified location
 
+dataset = DVS128Gesture(root=dataset_dir, train=True, data_type='event')
+data_loader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=True, num_workers=1)
+for raw_events, target in tqdm(data_loader, desc='Loading training data'):
+    pass
+    # Do something
+    
+# Example: print all components of raw events corresponding to the last sample in dataloader
+print(raw_events[0]['t'])
+print(raw_events[0]['x'])
+print(raw_events[0]['y'])
+print(raw_events[0]['p'])
+# Then, print target corresponding to the sample. This is number between 0-10 as there are 11 classes of actions in the dataset.
+print(target)
+```
+
+**Example of usage for training that pre-processes events from each sample into frames; each of which has the same number of events**
+```python
 # Test loading DVS 128 gesture dataset and spliting each sample into N frames
 # such that each frame has about the same number of events
 print("Loading data - Example mode 1")
-dataset_train = DVS128Gesture(root=dataset_dir, train=True, data_type='frame', frames_number=simulation_steps, split_by='number')
-dataset_test = DVS128Gesture(root=dataset_dir, train=False, data_type='frame', frames_number=simulation_steps, split_by='number')
+dataset_train = DVS128Gesture(root=dataset_dir, train=True, data_type='frame', frames_number=16, split_by='number')
+dataset_test = DVS128Gesture(root=dataset_dir, train=False, data_type='frame', frames_number=16s, split_by='number')
 print(f'dataset_train:{dataset_train.__len__()}, dataset_test:{dataset_test.__len__()}')
 
 print("Creating data loaders")
 data_loader = torch.utils.data.DataLoader(
-    dataset_train, batch_size=batch_size,
-    shuffle=True, num_workers=workers, pin_memory=False)
+    dataset_train, batch_size=16,
+    shuffle=True, num_workers=4, pin_memory=False)
 data_loader_test = torch.utils.data.DataLoader(
-    dataset_test, batch_size=batch_size,
-    shuffle=False, num_workers=workers, pin_memory=False)
+    dataset_test, batch_size=16,
+    shuffle=False, num_workers=4, pin_memory=False)
 
 for event_reprs, target in tqdm(data_loader, desc='Loading training data'):
     pass
@@ -41,7 +55,7 @@ for event_reprs, target in tqdm(data_loader_test, desc='Loading testing data'):
 print(event_reprs.shape, target.shape)
 ```
 
-**Another example of dataset usage in a different mode**
+**Another example of dataset usage for training that pre-processes events from each sample into frames, but each frame with equal duration**
 ```python
 # Test loading DVS 128 gesture dataset and spliting each sample into abritrary number of frames
 # such that each frame has about the same duration for instance 3e5 micro second
@@ -53,11 +67,11 @@ print(f'dataset_train:{dataset_train.__len__()}, dataset_test:{dataset_test.__le
 print("Creating data loaders")
 # Collate function is needed because each sample may have a different size
 data_loader = torch.utils.data.DataLoader(
-    dataset_train, batch_size=batch_size, collate_fn=base_dataset.pad_seq,
-    shuffle=True, num_workers=workers, pin_memory=False)
+    dataset_train, batch_size=16, collate_fn=base_dataset.pad_seq,
+    shuffle=True, num_workers=4, pin_memory=False)
 data_loader_test = torch.utils.data.DataLoader(
-    dataset_test, batch_size=batch_size, collate_fn=base_dataset.pad_seq,
-    shuffle=False, num_workers=workers, pin_memory=False)
+    dataset_test, batch_size=16, collate_fn=base_dataset.pad_seq,
+    shuffle=False, num_workers=4, pin_memory=False)
 
 # Suppose we want to measure length of event representation 
 train_repr_lens = []
