@@ -96,4 +96,4 @@ test_repr_lens = torch.as_tensor(test_repr_lens)
 # Print statistic of the event representation length 
 print(torch.min(test_repr_lens), torch.max(test_repr_lens), torch.mean(test_repr_lens.float()), torch.std(test_repr_lens.float()))
 ```
-There are other modes of loading dataset. See files for details.
+There are other modes for loading dataset. See [base_dataset.py](https://github.com/wponghiran/dvs128_gesture_pytorch/blob/main/base_dataset.py#L587) for details.
