@@ -16,8 +16,8 @@ import math
 import tqdm
 import shutil
 import logging
-np_savez = np.savez_compressed
 import sys
+from pathlib import Path
 
 def play_frame(x: torch.Tensor or np.ndarray, save_gif_to: str = None) -> None:
     '''
@@ -282,13 +282,7 @@ def integrate_events_file_to_frames_file_by_fixed_frames_number(loader: Callable
     Integrate a events file to frames by fixed frames number and save it. See :class:`cal_fixed_frames_number_segment_index` and :class:`integrate_events_segment_to_frame` for more details.
     '''
     fname = os.path.join(output_dir, os.path.basename(events_np_file))
-    np_savez(fname, frames=integrate_events_by_fixed_frames_number(loader(events_np_file), split_by, frames_num, H, W))
-    if print_save:
-        print(f'Frames [{fname}] saved.')
-
-def integrate_events_file_to_frames_file_by_fixed_frames_number(loader: Callable, events_np_file: str, output_dir: str, frame_duration: int, H: int, W: int, print_save: bool = False) -> None:
-    fname = os.path.join(output_dir, os.path.basename(events_np_file))
-    np_savez(fname, frames=integrate_events_by_frame_duration(loader(events_np_file), frame_duration, H, W))
+    np.savez_compressed(fname, frames=integrate_events_by_fixed_frames_number(loader(events_np_file), split_by, frames_num, H, W))
     if print_save:
         print(f'Frames [{fname}] saved.')
 
@@ -320,7 +314,7 @@ def integrate_events_by_frame_duration(events: Dict, frame_duration: int, H: int
 
 def integrate_events_file_to_frames_file_by_frame_duration(loader: Callable, events_np_file: str, output_dir: str, frame_duration: int, H: int, W: int, print_save: bool = False) -> None:
     fname = os.path.join(output_dir, os.path.basename(events_np_file))
-    np_savez(fname, frames=integrate_events_by_frame_duration(loader(events_np_file), frame_duration, H, W))
+    np.savez_compressed(fname, frames=integrate_events_by_frame_duration(loader(events_np_file), frame_duration, H, W))
     if print_save:
         print(f'Frames [{fname}] saved.')
 
@@ -364,7 +358,7 @@ def integrate_events_by_fixed_duration(events: Dict, duration: int, H: int, W: i
             return np.concatenate(frames)
 
 def save_frames_to_npz_and_print(fname: str, frames):
-    np_savez(fname, frames=frames)
+    np.savez_compressed(fname, frames=frames)
     print(f'Frames [{fname}] saved.')
 
 def create_same_directory_structure(source_dir: str, target_dir: str) -> None:
@@ -545,10 +539,10 @@ class NeuromorphicDatasetFolder(DatasetFolder):
                             utils.download_url(url=url, root=download_root, filename=file_name, md5=md5)
                         else:
                             raise NotImplementedError(
-                                f'This dataset can not be downloaded by SpikingJelly, please download [{file_name}] from [{url}] manually and put files at {download_root}.')
+                                f'This dataset cannot be downloaded by this script, please download [{file_name}] from [{url}] manually and put files at {download_root}.')
 
             else:
-                os.mkdir(download_root)
+                Path(download_root).mkdir(parents=True, exist_ok=True)
                 print(f'Mkdir [{download_root}] to save downloaded files.')
                 resource_list = self.resource_url_md5()
                 if self.downloadable():
@@ -558,17 +552,16 @@ class NeuromorphicDatasetFolder(DatasetFolder):
                         print(f'Download [{file_name}] from [{url}] to [{download_root}]')
                         utils.download_url(url=url, root=download_root, filename=file_name, md5=md5)
                 else:
-                    raise NotImplementedError(f'This dataset can not be downloaded by SpikingJelly, '
-                                              f'please download files manually and put files at [{download_root}]. '
+                    raise NotImplementedError(f'Please download files manually and put files at [{download_root}]. '
                                               f'The resources file_name, url, and md5 are: \n{resource_list}')
 
             # We have downloaded files and checked files. Now, let us extract the files
             extract_root = os.path.join(root, 'extract')
             if os.path.exists(extract_root):
                 print(f'The directory [{extract_root}] for saving extracted files already exists.\n'
-                      f'SpikingJelly will not check the data integrity of extracted files.\n'
+                      f'loading will not check the data integrity of extracted files.\n'
                       f'If extracted files are not integrated, please delete [{extract_root}] manually, '
-                      f'then SpikingJelly will re-extract files from [{download_root}].')
+                      f'then this class will re-extract files from [{download_root}].')
                 # shutil.rmtree(extract_root)
                 # print(f'Delete [{extract_root}].')
             else:
@@ -611,7 +604,6 @@ class NeuromorphicDatasetFolder(DatasetFolder):
                     t_ckp = time.time()
                     with ThreadPoolExecutor(max_workers=16) as tpe:
                         print(f'Start ThreadPoolExecutor with max workers = [{tpe._max_workers}].')
-                    # if True:
                         for e_root, e_dirs, e_files in os.walk(events_np_root):
                             if e_files.__len__() > 0:
                                 output_dir = os.path.join(frames_np_root, os.path.relpath(e_root, events_np_root))
@@ -621,10 +613,8 @@ class NeuromorphicDatasetFolder(DatasetFolder):
                                     # Add additional option to split by frame duration 
                                     if split_by == 'frame_duration':
                                         tpe.submit(integrate_events_file_to_frames_file_by_frame_duration, self.load_events_np, events_np_file, output_dir, frame_duration, H, W, True)
-                                        # integrate_events_file_to_frames_file_by_frame_duration(self.load_events_np, events_np_file, output_dir, frame_duration, H, W, True)
                                     else:
                                         tpe.submit(integrate_events_file_to_frames_file_by_fixed_frames_number, self.load_events_np, events_np_file, output_dir, split_by, frames_number, H, W, True)
-                                        # integrate_events_file_to_frames_file_by_fixed_frames_number(self.load_events_np, events_np_file, output_dir, split_by, frames_number, H, W, True)
 
                     print(f'Used time = [{round(time.time() - t_ckp, 2)}s].')
 
